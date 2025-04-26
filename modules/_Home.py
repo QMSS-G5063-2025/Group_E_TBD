@@ -8,7 +8,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 def show():
-    image_path = r"C:\Users\Lenovo\Desktop\Group_E_TBD-main\project\img\New-York.jpg"
+    image_path = os.path.join("img", "New-York.jpg")
     
     img_base64 = get_base64_of_bin_file(image_path)
     

@@ -9,10 +9,8 @@ from shapely.geometry import Point
 import geopandas as gpd
 import os
 
-# Define Manhattan ZIP code to neighborhood mapping
 @st.cache_data
 def get_manhattan_zip_map():
-    """Return mapping of Manhattan ZIP codes to neighborhoods"""
     return {
         10001: "Chelsea",
         10002: "Lower East Side",
@@ -61,7 +59,6 @@ def get_manhattan_zip_map():
         10282: "Battery Park City",
     }
 
-# Define neighborhood coordinates for centroid display
 @st.cache_data
 def get_neighborhood_coordinates():
     """Return coordinates for Manhattan neighborhoods"""
@@ -127,25 +124,19 @@ def load_geospatial_data():
         
     # Check if dataset has geometry information
     if 'the_geom' in modzcta_df.columns:
-        # Convert WKT geometry strings to GeoDataFrame
         geometries = modzcta_df['the_geom'].apply(shapely.wkt.loads)
         modzcta_gdf = gpd.GeoDataFrame(modzcta_df, geometry=geometries, crs="EPSG:4326")
             
-        # Convert MODZCTA to match zipcode in our data
         modzcta_gdf['zipcode'] = modzcta_gdf['MODZCTA'].astype(int)
             
-        # Filter to just Manhattan ZIP codes
         manhattan_zips = list(get_manhattan_zip_map().keys())
         manhattan_gdf = modzcta_gdf[modzcta_gdf['zipcode'].isin(manhattan_zips)]
             
-        # Map ZIP codes to neighborhoods
         zip_to_neighborhood = get_manhattan_zip_map()
         manhattan_gdf['neighborhood'] = manhattan_gdf['zipcode'].map(zip_to_neighborhood)
             
-        # Fill in missing neighborhoods
         manhattan_gdf['neighborhood'].fillna('Other', inplace=True)
             
-        # Dissolve geometries by neighborhood to combine same-named neighborhoods
         manhattan_gdf_dissolved = manhattan_gdf.dissolve(by='neighborhood').reset_index()
             
         return manhattan_gdf_dissolved
@@ -154,10 +145,8 @@ def load_geospatial_data():
 
 def create_facility_map(facilities_df, geo_data=None):
     
-    # Calculate facility counts by neighborhood
     neighborhood_counts = facilities_df.groupby('NEIGHBORHOOD').size().reset_index(name='FACILITY_COUNT')
     
-    # Get neighborhood coordinates
     neighborhood_coords = get_neighborhood_coordinates()
     neighborhood_df = pd.DataFrame([
         {'NEIGHBORHOOD': nbhd, 'LATITUDE': lat, 'LONGITUDE': lon} 
@@ -172,10 +161,8 @@ def create_facility_map(facilities_df, geo_data=None):
         how='left'
     ).fillna(0)
     
-    # Convert facility count to integer
     neighborhood_df['FACILITY_COUNT'] = neighborhood_df['FACILITY_COUNT'].astype(int)
     
-    # Create tabs for different views
     tab1, tab2 = st.tabs(["Neighborhood Overview", "Individual Facilities"])
     
     with tab1:
@@ -234,17 +221,15 @@ def create_facility_map(facilities_df, geo_data=None):
                 title="Health Facilities in Manhattan by Neighborhood (2023)"
             )
             
-            # Update layout for better visibility
             fig.update_layout(
                 mapbox_style="carto-positron",
                 margin={"r": 0, "t": 30, "l": 0, "b": 0},
                 height=700,
             )
             
-            # Display the map
+
             st.plotly_chart(fig, use_container_width=True)
         
-        # Statistics section - Moved from tab3 to tab1
         st.subheader("Health Facility Statistics by Neighborhood (2023)")
         
         # Summary statistics
@@ -286,39 +271,32 @@ def create_facility_map(facilities_df, geo_data=None):
         
         st.plotly_chart(fig, use_container_width=True)
         
-        # Data table showing neighborhood statistics
         st.markdown("### Detailed Neighborhood Facility Counts")
         
-        # Sort by count (descending)
         sorted_data = neighborhood_counts.sort_values('FACILITY_COUNT', ascending=False)
         
-        # Add rank
         sorted_data = sorted_data.reset_index(drop=True)
         sorted_data.index = sorted_data.index + 1
-        
-        # Display table
+
         st.dataframe(sorted_data, use_container_width=True)
     
     with tab2:
         st.subheader("Individual Health Facility Locations (2023)")
         
-        # Filter options
+        # Filter
         selected_neighborhoods = st.multiselect(
             "Select Neighborhoods:",
             options=sorted(facilities_df['NEIGHBORHOOD'].unique()),
             default=[]
         )
         
-        # Filter the data
         if selected_neighborhoods:
             filtered_facilities = facilities_df[facilities_df['NEIGHBORHOOD'].isin(selected_neighborhoods)]
         else:
             filtered_facilities = facilities_df
         
-        # Show the number of facilities displayed
         st.write(f"Displaying {len(filtered_facilities)} facilities")
         
-        # Create individual facility map
         fig = px.scatter_mapbox(
             filtered_facilities,
             lat='LATITUDE',
@@ -367,18 +345,14 @@ def load_property_data():
             st.warning(f"Property price data file not found: {file_path}")
             return pd.DataFrame()
             
-        # Load property data
         df = pd.read_excel(file_path)
         
-        # Clean the data
         df['sale_price'] = pd.to_numeric(df['sale_price'], errors='coerce')
-        df = df[df['sale_price'] > 10000]  # Remove properties with very low prices
+        df = df[df['sale_price'] > 10000]  
         
-        # Map ZIP codes to neighborhoods
         zip_to_neighborhood = get_manhattan_zip_map()
         df['NEIGHBORHOOD'] = df['ZIP CODE'].map(zip_to_neighborhood)
         
-        # Filter for Manhattan neighborhoods
         df = df.dropna(subset=['NEIGHBORHOOD'])
         
         return df
@@ -387,28 +361,21 @@ def load_property_data():
         return pd.DataFrame()
 
 def analyze_facility_price_relationship(facilities_df, property_df):
-    """Analyze relationship between health facilities and property prices"""
     
     st.subheader("Health Facilities vs. Property Prices (2023)")
     
-    # Calculate facility counts by neighborhood
     facility_counts = facilities_df.groupby('NEIGHBORHOOD').size().reset_index(name='FACILITY_COUNT')
     
-    # Calculate median price by neighborhood
     price_stats = property_df.groupby('NEIGHBORHOOD').agg({
         'sale_price': ['median', 'mean', 'count']
     }).reset_index()
     
-    # Rename columns
     price_stats.columns = ['NEIGHBORHOOD', 'MEDIAN_PRICE', 'MEAN_PRICE', 'SALES_COUNT']
     
-    # Merge the datasets
     merged_df = pd.merge(facility_counts, price_stats, on='NEIGHBORHOOD', how='inner')
     
-    # Sort by facility count for visualization
     sorted_df = merged_df.sort_values('FACILITY_COUNT', ascending=False)
     
-    # Treemap 
     fig3 = px.treemap(
         merged_df,
         path=['NEIGHBORHOOD'],
@@ -427,10 +394,9 @@ def analyze_facility_price_relationship(facilities_df, property_df):
     fig3.update_layout(height=600)
     st.plotly_chart(fig3, use_container_width=True)
     
-    # Calculate correlation
+    # Correlation
     correlation = merged_df['FACILITY_COUNT'].corr(merged_df['MEDIAN_PRICE'])
     
-    # Display correlation info
     st.markdown(f"**Correlation between Facility Count and Median Property Price:** {correlation:.3f}")
     
     if correlation > 0.5:
@@ -440,15 +406,12 @@ def analyze_facility_price_relationship(facilities_df, property_df):
     else:
         st.markdown("There appears to be a **weak or moderate relationship** between the number of health facilities and property prices in Manhattan neighborhoods.")
     
-    # Combined data table
     st.subheader("Detailed Neighborhood Comparison")
     
-    # Format price columns for display
     display_df = merged_df.copy()
     display_df['MEDIAN_PRICE'] = display_df['MEDIAN_PRICE'].apply(lambda x: f"${x:,.2f}")
     display_df['MEAN_PRICE'] = display_df['MEAN_PRICE'].apply(lambda x: f"${x:,.2f}")
     
-    # Rename columns for better display
     display_df.columns = [
         'Neighborhood', 
         'Facility Count', 
@@ -457,45 +420,35 @@ def analyze_facility_price_relationship(facilities_df, property_df):
         'Property Sales Count'
     ]
     
-    # Sort by Facility Count (descending)
     sorted_display_df = display_df.sort_values('Facility Count', ascending=False)
     
-    # Display table
     st.dataframe(sorted_display_df, use_container_width=True)
 
 def show():
     """Display Manhattan health facilities map and analysis"""
     st.title("Manhattan Health Facilities Interactive Map (2023)")
     
-    # Load health facility data
     with st.spinner("Loading health facility data..."):
         facilities_df = load_health_facilities()
     
-    # Load geospatial data
     with st.spinner("Loading geospatial data..."):
         geo_data = load_geospatial_data()
     
-    # Load property data
     with st.spinner("Loading property price data..."):
         property_df = load_property_data()
     
-    # Create tabs for different analyses
     tab1, tab2 = st.tabs(["Facility Distribution", "Facility vs. Property Prices"])
     
     with tab1:
-        # Check if data loaded successfully
         st.write(f"Found {len(facilities_df)} health facilities in Manhattan in 2023")
             
-        # Create and display the map
         create_facility_map(facilities_df, geo_data)
     
     with tab2:
-        # Analyze relationship between facilities and property prices
         if not property_df.empty and not facilities_df.empty:
             analyze_facility_price_relationship(facilities_df, property_df)
         else:
             st.error("Cannot perform analysis: Missing property price data or facility data")
 
-# For direct execution of this module
 if __name__ == "__main__":
     show()

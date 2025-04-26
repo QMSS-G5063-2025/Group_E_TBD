@@ -8,6 +8,7 @@ import os
 import glob
 
 def load_median_age_data(min_year=2015):
+
     file_pattern = os.path.join('datasets', 'Combined_*.xlsx')
     excel_files = glob.glob(file_pattern)
     
@@ -289,7 +290,7 @@ def show_median_age_analysis():
         age_df_all = load_median_age_data(min_year=2015)
     
     age_df_recent = age_df_all[age_df_all['Year'] >= 2021]
-    
+
     if not age_df_all.empty:
         analysis_tabs = st.tabs(["Trends by Neighborhood", "Age vs. Property Prices"])
         

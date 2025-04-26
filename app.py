@@ -4,14 +4,15 @@ import os
 
 sys.path.append(os.path.dirname(__file__))
 
-from modules import _Home, _Pricechanges, _Health, _PriceMap, _DataOverview, _Education
-from modules._Demographics.main import show as _Demographics_show
-
+# Important: st.set_page_config must be the first Streamlit command
 st.set_page_config(
     page_title="Manhattan Rolling Sale Analysis",
     layout="wide",
     menu_items=None
 )
+
+from modules import _Home, _Pricechanges, _Health, _PriceMap, _DataOverview, _Sentiment, _Introduction
+from modules._Demographics.main import show as _Demographics_show
 
 def create_sidebar():
     with st.sidebar:
@@ -19,6 +20,9 @@ def create_sidebar():
         
         if st.button("Home", use_container_width=True):
             st.session_state.page = "home"
+        
+        if st.button("Introduction", use_container_width=True):
+            st.session_state.page = "Introduction"
         
         st.subheader("Analysis Part")
         
@@ -37,9 +41,6 @@ def create_sidebar():
         if st.button("Health", use_container_width=True):
             st.session_state.page = "Health"
 
-        if st.button("Education", use_container_width=True):
-            st.session_state.page = "Education"
-
 if 'page' not in st.session_state:
     st.session_state.page = "home"
 
@@ -47,6 +48,8 @@ create_sidebar()
 
 if st.session_state.page == "home":
     _Home.show()
+elif st.session_state.page == "Introduction":
+    _Introduction.show()
 elif st.session_state.page == "DataOverview":
     _DataOverview.show()
 elif st.session_state.page == "PriceMap":
@@ -57,5 +60,3 @@ elif st.session_state.page == "Demographics":
     _Demographics_show()
 elif st.session_state.page == "Health":
     _Health.show()
-elif st.session_state.page == "Education":
-    _Education.show()

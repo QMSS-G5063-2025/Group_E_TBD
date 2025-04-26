@@ -15,8 +15,132 @@ def show():
         # Basic data cleaning
         df['sale_price'] = pd.to_numeric(df['sale_price'], errors='coerce')
         df = df[df['sale_price'] > 10000] 
-        return df
+        
+        # Define the consolidated neighborhoods - using the same mapping as in PriceMap
+        neighborhood_mapping = {
+            'UPPER EAST SIDE (59-79)': 'Upper East Side',
+            'UPPER EAST SIDE (79-96)': 'Upper East Side',
+            'UPPER EAST SIDE (96-110)': 'Upper East Side',
+            'ROOSEVELT ISLAND': 'Upper East Side',
+            'YORKVILLE': 'Upper East Side',
+            
+            'UPPER WEST SIDE (59-79)': 'Upper West Side', 
+            'UPPER WEST SIDE (79-96)': 'Upper West Side',
+            'UPPER WEST SIDE (96-116)': 'Upper West Side',
+            'MANHATTAN VALLEY': 'Upper West Side',
+            'LINCOLN CENTER': 'Upper West Side',
+            
+            'MIDTOWN EAST': 'Midtown East',
+            'MURRAY HILL': 'Midtown East',
+            'SUTTON PLACE': 'Midtown East',
+            
+            'MIDTOWN WEST': 'Midtown',
+            'MIDTOWN CBD': 'Midtown',
+            'CLINTON': 'Midtown',
+            "HELL'S KITCHEN": "Midtown",
+            'FASHION': 'Midtown',
+            
+            'GRAMERCY': 'Gramercy',
+            'KIPS BAY': 'Gramercy',
+            'FLATIRON': 'Gramercy',
+            
+            'GREENWICH VILLAGE-CENTRAL': 'Greenwich Village', 
+            'GREENWICH VILLAGE-WEST': 'Greenwich Village',
+            'WEST VILLAGE': 'Greenwich Village',
+            
+            'CHELSEA': 'Chelsea',
+            
+            'SOHO': 'SoHo/TriBeCa',
+            'TRIBECA': 'SoHo/TriBeCa',
+            'LITTLE ITALY': 'SoHo/TriBeCa',
+            
+            'FINANCIAL': 'Financial District',
+            'CIVIC CENTER': 'Financial District',
+            'SEAPORT': 'Financial District',
+            'SOUTHBRIDGE': 'Financial District',
+            
+            'BATTERY PARK CITY': 'Battery Park City',
+            
+            'EAST VILLAGE': 'East Village',
+            'ALPHABET CITY': 'East Village',
+            
+            'LOWER EAST SIDE': 'Lower East Side',
+            'CHINATOWN': 'Lower East Side',
+            
+            'HARLEM-CENTRAL': 'Harlem',
+            'HARLEM-EAST': 'Harlem',
+            'HARLEM-UPPER': 'Harlem',
+            'HARLEM-WEST': 'Harlem',
+            'MORNINGSIDE HEIGHTS': 'Harlem',
+            
+            'WASHINGTON HEIGHTS LOWER': 'Washington Heights',
+            'WASHINGTON HEIGHTS UPPER': 'Washington Heights',
+            'INWOOD': 'Washington Heights'
+        }
+        
+        st.markdown("""
+        <p style="font-size: 20px;">
+        The main dataset, the rolling sales data, we used for the analysis was released by the New York City Department of Finance. The dataset provides detailed records of property sales across the city. For simplicity because of the project scope, we chose to dive deeply into the prices of Manhattan. We offer a streamlined summary of the original dataset to help users better understand trends in Manhattan's real estate market.
+        </p>
+        """, unsafe_allow_html=True)
 
+        # Apply the mapping to create a consolidated neighborhood column
+        if 'neighborhood' in df.columns:
+            df['consolidated_neighborhood'] = df['neighborhood'].map(
+                lambda x: next((v for k, v in neighborhood_mapping.items() if k in str(x).upper()), x)
+            )
+        else:
+            # If neighborhood doesn't exist, create it based on ZIP CODE
+            zip_to_neighborhood = {
+                10001: "Chelsea",
+                10002: "Lower East Side",
+                10003: "East Village",
+                10004: "Financial District",
+                10005: "Financial District",
+                10006: "Financial District",
+                10007: "SoHo/TriBeCa",
+                10009: "East Village",
+                10010: "Gramercy",
+                10011: "Chelsea",
+                10012: "SoHo/TriBeCa",
+                10013: "SoHo/TriBeCa",
+                10014: "Greenwich Village",
+                10016: "Gramercy",
+                10017: "Midtown East",
+                10018: "Midtown",
+                10019: "Midtown",
+                10020: "Midtown",
+                10021: "Upper East Side",
+                10022: "Midtown East",
+                10023: "Upper West Side",
+                10024: "Upper West Side",
+                10025: "Upper West Side",
+                10026: "Harlem",
+                10027: "Harlem",
+                10028: "Upper East Side",
+                10029: "Harlem",
+                10030: "Harlem",
+                10031: "Harlem",
+                10032: "Washington Heights",
+                10033: "Washington Heights",
+                10034: "Washington Heights",
+                10035: "Harlem",
+                10036: "Midtown",
+                10037: "Harlem",
+                10038: "Financial District",
+                10039: "Harlem",
+                10040: "Washington Heights",
+                10044: "Upper East Side",
+                10065: "Upper East Side",
+                10069: "Upper West Side",
+                10075: "Upper East Side",
+                10128: "Upper East Side",
+                10280: "Battery Park City",
+                10282: "Battery Park City",
+            }
+            df['consolidated_neighborhood'] = df['ZIP CODE'].map(zip_to_neighborhood)
+        
+        return df
 
     with st.spinner("Loading 2023 sales data..."):
         df = load_sales_data()
@@ -42,8 +166,8 @@ def show():
         value=(min_price, max_price)
     )
     
-    # Neighborhood filter
-    all_neighborhoods = sorted(df['neighborhood'].unique().tolist())
+    # Neighborhood filter - using consolidated neighborhoods
+    all_neighborhoods = sorted(df['consolidated_neighborhood'].dropna().unique().tolist())
     selected_neighborhoods = st.sidebar.multiselect(
         "Select Neighborhoods",
         options=all_neighborhoods,
@@ -59,7 +183,7 @@ def show():
     
     # Neighborhood filter data
     if selected_neighborhoods:
-        filtered_df = filtered_df[filtered_df['neighborhood'].isin(selected_neighborhoods)]
+        filtered_df = filtered_df[filtered_df['consolidated_neighborhood'].isin(selected_neighborhoods)]
     
     # Display Data
     st.subheader("Filtered Data Summary")
@@ -72,13 +196,19 @@ def show():
     # Selection of visualization
     st.subheader("Data Visualizations")
     
+    st.markdown("""
+    <p style="font-size: 20px;">
+    To make the data more readable, we included two interactive histograms that allow for both broad and specific analysis:
+    </p>
+     """, unsafe_allow_html=True)
+    
     viz_type = st.radio(
         "Select Visualization",
         ["Price Distribution", "Neighborhood Comparison"]
     )
     
     if viz_type == "Price Distribution":
-        # Histogram
+        # Histogram       
         fig = px.histogram(
             filtered_df,
             x='sale_price',
@@ -98,33 +228,45 @@ def show():
             )
         )
         st.plotly_chart(fig, use_container_width=True)
-        
+        st.markdown("""
+        <p style="font-size: 20px;">
+        The Price Distribution histogram shows the overall distribution of sales prices in Manhattan. Users can filter by one or more neighborhoods to directly compare pricing trends across areas.
+        </p>
+         """, unsafe_allow_html=True)
+    
     elif viz_type == "Neighborhood Comparison":
-        neighborhood_avg = filtered_df.groupby('neighborhood')['sale_price'].mean().reset_index()
+        # Use consolidated neighborhoods for more concise visualization
+        neighborhood_avg = filtered_df.groupby('consolidated_neighborhood')['sale_price'].mean().reset_index()
         neighborhood_avg = neighborhood_avg.sort_values('sale_price', ascending=False)
             
         fig = px.bar(
                 neighborhood_avg,
-                x='neighborhood',
+                x='consolidated_neighborhood',
                 y='sale_price',
                 title="Average Sale Price by Neighborhood (2023)",
-                labels={'neighborhood': 'Neighborhood', 'sale_price': 'Average Price ($)'},
+                labels={'consolidated_neighborhood': 'Neighborhood', 'sale_price': 'Average Price ($)'},
                 color='sale_price',
                 color_continuous_scale='Blues'
         )
         fig.update_layout(
                 xaxis_tickangle=-45,
                 yaxis_title="Average Price ($)",
-                xaxis_title="Neighborhood"
+                xaxis_title="Neighborhood",
+                height=600
         )
         st.plotly_chart(fig, use_container_width=True)
+        st.markdown("""
+        <p style="font-size: 20px;">
+        The Neighborhood Comparison histogram displays the average sales price in each neighborhood, also filterable for targeted comparisons.
+        </p>
+         """, unsafe_allow_html=True)
   
     # Data Table
     st.subheader("Interactive Data Table")
     
     # Column selector
     all_columns = df.columns.tolist()
-    default_columns = ['ADDRESS', 'neighborhood', 'ZIP CODE', 'sale_price']
+    default_columns = ['ADDRESS', 'consolidated_neighborhood', 'ZIP CODE', 'sale_price']
     selected_columns = st.multiselect(
         "Select Columns to Display",
         options=all_columns,
@@ -144,6 +286,15 @@ def show():
     else:
         st.dataframe(filtered_df, use_container_width=True)
     
+    st.markdown("""
+    <p style="font-size: 20px;">
+    For those interested in deeper inspection of the data, the full dataset is available in a table format that is both filterable on the webpage and downloadable for independent exploration. Users can customize what the table shows by selecting variables such as address, neighborhood, zip code, borough (which is less relevant because the analysis is limited to Manhattan), and of course, sales price.
+    </p>
+    <p style="font-size: 20px;">
+    This page is designed to support informed exploration, whether you're a curious resident, prospective buyer, or urban researcher.
+    </p>
+    """, unsafe_allow_html=True)
+        
     # Download option
     csv = filtered_df.to_csv(index=False).encode('utf-8')
     st.download_button(

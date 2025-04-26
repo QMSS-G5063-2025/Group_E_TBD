@@ -91,21 +91,23 @@ def show():
     """Render a map of Manhattan real estate prices by neighborhood boundaries"""
     st.title("Manhattan Real Estate Price Map")
     
-    # Add year selection
+    st.markdown("""
+    <p style="font-size: 20px;">
+    Using the same dataset from NYC Department of Finance, we presented a spatial analysis on a color-coded choropleth map of Manhattan by displaying median sales prices in each neighborhood. Instead of looking only at the data of 2023 in the overview, the user can now access annual data from 2020-2023 to observe pricing patterns and market evolution over time. They can select any year of interest to inspect the data in more detail. 
+    </p>
+    """, unsafe_allow_html=True)
+    
     year_options = ["2023", "2022", "2021", "2020"]
     selected_year = st.selectbox("Select Year", year_options)
     
-    # Load property sale data based on selected year
     with st.spinner(f"Loading property data for {selected_year}..."):
         df = load_data_by_year(selected_year)
         year_display = selected_year
     
-    # Filter extreme outliers
-    min_filter = 10000  # $10,000 minimum
-    max_filter = 50000000  # $50M maximum
+    min_filter = 10000  
+    max_filter = 50000000 
     df_filtered = df[(df['sale_price'] >= min_filter) & (df['sale_price'] <= max_filter)]
     
-    # Calculate statistics for each neighborhood
     neighborhood_stats = df_filtered.groupby('neighborhood').agg({
         'sale_price': ['median', 'mean', 'count'],
         'latitude': 'mean',
@@ -117,7 +119,6 @@ def show():
     
     # Try to process MODZCTA data to get neighborhood regions
     try:
-        # Load the MODZCTA data
         modzcta_df = pd.read_csv('datasets/Modified_Zip_Code_Tabulation_Areas__MODZCTA__20250421.csv')
         
         # Check if the dataset has geometry information
@@ -140,10 +141,8 @@ def show():
             for index, row in df_filtered.drop_duplicates(['ZIP CODE', 'neighborhood']).iterrows():
                 zip_to_neighborhood[row['ZIP CODE']] = row['neighborhood']
             
-            # Map ZIP codes to neighborhoods in our GeoDataFrame
             manhattan_gdf['neighborhood'] = manhattan_gdf['zipcode'].map(zip_to_neighborhood)
             
-            # Fill in missing neighborhoods
             manhattan_gdf['neighborhood'].fillna('Other', inplace=True)
             
             # Key fix: Dissolve geometries by neighborhood to combine same-named neighborhoods
@@ -156,12 +155,12 @@ def show():
                 how='left'
             )
             
-            # Fill NaN values
             manhattan_gdf_dissolved['median_price'].fillna(0, inplace=True)
             manhattan_gdf_dissolved['mean_price'].fillna(0, inplace=True)
             manhattan_gdf_dissolved['sales_count'].fillna(0, inplace=True)
-            
-            # Create choropleth map
+        
+
+            # Choropleth map
             fig = px.choropleth_mapbox(
                 manhattan_gdf_dissolved,
                 geojson=manhattan_gdf_dissolved.geometry.__geo_interface__,
@@ -169,9 +168,9 @@ def show():
                 color='median_price',
                 color_continuous_scale='Blues',
                 range_color=(neighborhood_stats['median_price'].min(), neighborhood_stats['median_price'].max()),
-                hover_name='neighborhood',  # Show neighborhood on hover, not zipcode
+                hover_name='neighborhood', 
                 hover_data={
-                    'zipcode': False,  # Don't show zipcode on hover
+                    'zipcode': False,
                     'MODZCTA': False,
                     'neighborhood': True,
                     'median_price': True,
@@ -205,23 +204,21 @@ def show():
             
     except Exception as e:
         st.error(f"Error creating map: {str(e)}")
-        # If any error occurs, fall back to bubble map
         create_bubble_map(neighborhood_stats, year_display)
     
-    # Show neighborhood rankings
     show_neighborhood_rankings(neighborhood_stats, year_display)
 
 
 def create_bubble_map(neighborhood_stats, year_display):
     """Create a bubble map of neighborhoods"""
-    # Create bubble map
+    # Bubble map
     fig = px.scatter_mapbox(
         neighborhood_stats,
         lat='latitude',
         lon='longitude',
-        size='median_price',  # Size bubbles by median price
+        size='median_price', 
         size_max=40,
-        color='median_price',  # Color bubbles by median price
+        color='median_price',  
         color_continuous_scale='Blues',
         hover_name='neighborhood',
         hover_data={
@@ -264,12 +261,10 @@ def show_neighborhood_rankings(neighborhood_stats, year_display):
     sorted_stats = sorted_stats.reset_index(drop=True)
     sorted_stats.index = sorted_stats.index + 1  # Rank starting from 1
     
-    # Prepare for display
     display_columns = ['neighborhood', 'median_price', 'mean_price', 'sales_count']
     table_data = sorted_stats[display_columns].copy()
     table_data.columns = ['Neighborhood', 'Median Price', 'Mean Price', 'Sales Count']
     
-    # Format prices as dollars
     table_data['Median Price'] = table_data['Median Price'].apply(lambda x: f"${x:,.2f}")
     table_data['Mean Price'] = table_data['Mean Price'].apply(lambda x: f"${x:,.2f}")
     
@@ -278,8 +273,6 @@ def show_neighborhood_rankings(neighborhood_stats, year_display):
     
     # Bar chart of top 15 neighborhoods by price
     st.subheader(f"Top 15 Neighborhoods by Median Price ({year_display})")
-    
-    # Create bar chart for top 15 neighborhoods
     top_neighborhoods = sorted_stats.head(15)
     
     fig = px.bar(
