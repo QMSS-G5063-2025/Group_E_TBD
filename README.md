@@ -45,8 +45,9 @@ To run this application, you'll need:
 ## Data Sources
 
 This project uses several datasets:
-- Manhattan real estate sales data (2020-2023)
-- Demographic data from census information (ACS)
-- Health facility information
-- Neighborhood boundary files
+- Manhattan Neighborhood Sales Data from Annualized sales update by NYC Department of Finance (2020-2023)
+- DP-03 (Selected Economic Characteristics) and DP-05 (Demographics) from American Community Survey (ACS) by United States Census Bureau (2015-2019, 2021-2023)
+- Health Facility General Information by New York State Department of Health (2025)
+- School Quality Reports by NYC Department of Education (2022-2023)
+- Neighborhood Boundaries on the Environment & Health Data Portal by City of New York (2020)
 
