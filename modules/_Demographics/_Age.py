@@ -283,6 +283,11 @@ def analyze_age_price_relationship(year, age_df, sales_df):
     
     st.write(f"There is a {direction} correlation ({r_value:.3f}) between neighborhood median age and property prices, with {std_err:.3f} standard error.")
 
+    st.markdown("""
+    <p style="font-size: 20px;">
+    The small negative correlation indicates that Manhattan neighborhoods with younger median ages tend to purchase real estate at a somewhat higher median sale prices, though this relationship is relatively weak. This pattern might suggest that areas attracting younger residents command premium prices, though the considerable variation in data points reveals that age is just one of many factors influencing Manhattan's real estate valuations.
+    """, unsafe_allow_html=True)
+
 def show_median_age_analysis():
     st.header("Median Age Analysis")
     
@@ -331,6 +336,12 @@ def show_median_age_analysis():
             
             # Display chart
             st.subheader("Median Age Trends")
+            st.markdown("""
+            <p style="font-size: 20px;">
+            When we examined the median age trends across Manhattan neighborhoods from 2015 to 2023, we found that most neighborhoods maintained relatively stable median ages, ranging between the early 30s and mid-40s. Neighborhoods like the Upper West Side and Upper East Side tended to have older populations, with median ages consistently above 40 years, while areas like the Lower East Side and East Harlem had younger resident populations.
+            </p>
+            """, unsafe_allow_html=True)
+
             fig = create_median_age_plot(age_df_all, selected_neighborhoods)
             if fig:
                 st.plotly_chart(fig, use_container_width=True)

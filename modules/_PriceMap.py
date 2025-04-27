@@ -292,3 +292,8 @@ def show_neighborhood_rankings(neighborhood_stats, year_display):
     )
     
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown("""
+    <p style="font-size: 20px;">
+    Along with the map, more granular information of the selected year is available in the form of a table and a histogram. The Neighborhood Price Ranking table includes complete metrics including median and mean prices and sales count for each neighborhood, sorted in descending order by price. The histogram features the top 15 most expensive neighborhoods, evaluated by the median price, providing context for Manhattan's premium market segments. The histogram presents the same results as the map.
+    </p>
+    """, unsafe_allow_html=True)

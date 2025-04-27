@@ -281,6 +281,11 @@ def analyze_income_price_relationship(year, income_df, sales_df):
     
     st.write(f"There is a {direction} correlation ({r_value:.3f}) between neighborhood median household income and property prices, with {std_err:.3f} standard error.")
 
+    st.markdown("""
+    <p style="font-size: 20px;">
+    Overall, the slight positive correlation between median incomes and median real estate sales prices suggest that neighborhoods with higher median incomes tend to have somewhat higher median sale prices.
+    """, unsafe_allow_html=True)
+
 def show_income_analysis():
     st.header("Median Household Income Analysis")
     
@@ -329,7 +334,20 @@ def show_income_analysis():
             
             # Display chart
             st.subheader("Median Income Trends")
+            st.markdown("""
+            <p style="font-size: 20px;">
+            The median income trends across Manhattan neighborhoods showed a clear divide between higher-income and lower-income neighborhoods. Neighborhoods like Battery Park City, Greenwich Village, SoHo, the Upper East Side, and the Upper West Side consistently maintained much higher median incomes, generally staying well above $100,000.
+            </p>
+            """, unsafe_allow_html=True)
+
             fig = create_median_income_plot(income_df_all, selected_neighborhoods)
+
+            st.markdown("""
+            <p style="font-size: 20px;">
+            In contrast, neighborhoods such as Central Harlem, East Harlem, Hamilton Heights, Chinatown, and Washington Heights showed much lower median incomes, often hovering around $50,000 to $70,000 over the same period. It is noteworthy that we have previously identified the real estate price growth between 2018 and 2023, and there is only a gradual upward movement in their income levels. This might be because of the difference between district boundary definitions used in the real estate and demographics data so that they did not directly correspond to each other. It could also be because rising incomes, even if still modest compared to the citywide average, may have supported greater demand for housing since areas like SoHo, Tribeca, and Midtown remained out of reach for many buyers, making areas like Washington Heights and Hamilton Heights attractive alternatives.
+            </p>
+            """, unsafe_allow_html=True)
+            
             if fig:
                 st.plotly_chart(fig, use_container_width=True)
             

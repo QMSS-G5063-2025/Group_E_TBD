@@ -230,9 +230,10 @@ def show():
         st.plotly_chart(fig, use_container_width=True)
         st.markdown("""
         <p style="font-size: 20px;">
-        The Price Distribution histogram shows the overall distribution of sales prices in Manhattan. Users can filter by one or more neighborhoods to directly compare pricing trends across areas.
-        </p>
-         """, unsafe_allow_html=True)
+        The Price Distribution histogram shows the overall distribution of sales prices in Manhattan. Users can filter by one or more neighborhoods to directly compare pricing trends across areas.</p>
+        <p style="font-size: 20px;">
+        The vast majority of sale prices in 2023 were clustered at the lower end of the price range. The distribution is extremely right-skewed, with most properties selling for relatively lower amounts while only a very small number reached extremely high sale prices. Beyond around $10 million, the number of transactions drops sharply, suggesting that ultra-high-value sales are rare outliers, while the majority of real estate activity took place at more modest price points.</p> 
+        """, unsafe_allow_html=True)
     
     elif viz_type == "Neighborhood Comparison":
         # Use consolidated neighborhoods for more concise visualization
@@ -257,9 +258,10 @@ def show():
         st.plotly_chart(fig, use_container_width=True)
         st.markdown("""
         <p style="font-size: 20px;">
-        The Neighborhood Comparison histogram displays the average sales price in each neighborhood, also filterable for targeted comparisons.
-        </p>
-         """, unsafe_allow_html=True)
+        The Neighborhood Comparison histogram displays the average sales price in each neighborhood, also filterable for targeted comparisons.</p>
+        <p style="font-size: 20px;"> 
+        Midtown and the Javits Center had the highest average sale prices in 2023, both significantly exceeding $7 million. These neighborhoods stood out clearly from the rest, with Midtown reaching close to $8 million on average. SoHo and Tribeca followed, with average prices hovering above $6 million. Together with Harlem and Greenwich Village, these were the top 5 most expensive neighborhoods by average sales price in 2023. On the other end, Midtown East, Lower East Side, and Upper West Side had much lower average sale prices, all falling below $3 million, indicating that only a few neighborhoods dominated the luxury real estate market.</p>
+        """, unsafe_allow_html=True)
   
     # Data Table
     st.subheader("Interactive Data Table")

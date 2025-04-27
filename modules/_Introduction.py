@@ -33,9 +33,9 @@ def show():
         <div class="intro-text">
         <p>Welcome to the <em>Price of Place: Manhattan Real Estate Trends and Insights</em> page! Our webpage presents a comprehensive analysis of rolling property sales in Manhattan, New York City. Motivated by the sharp fluctuations in real estate prices, we sought to better understand how property values evolve across time and space, and what underlying factors might influence these changes.</p>
 
-        <p>By examining <strong>neighborhood-level sales data</strong> alongside <strong>demographic profiles</strong> and <strong>proximity to educational and healthcare resources</strong>, we present patterns and correlations that potentially shape the real estate market to provide insights on how social infrastructure and community characteristics intersect with property valuation.</p>
+        <p>By examining neighborhood-level sales data alongside demographic profiles and proximity to healthcare resources, we present patterns and correlations that potentially shape the real estate market to provide insights on how social infrastructure and community characteristics intersect with property valuation.</p>
 
-        <p>This analysis can support decision-making for urban planners, potential homebuyers, and anyone interested in the socioeconomic fabric of New York City, for specifically, Manhattan. To make our findings accessible, we used a variety of visualization tools including <strong>geospatial maps, data tables, histograms, line charts, scatter plots, treemaps, and word clouds</strong> to illustrate trends in pricing, shifts over time, and neighborhood-level disparities.</p>
+        <p>This analysis can support decision-making for urban planners, potential homebuyers, and anyone interested in the socioeconomic fabric of New York City, for specifically, Manhattan. To make our findings accessible, we used a variety of visualization tools including geospatial maps, data tables, histograms, line charts, scatter plots, treemaps to illustrate trends in pricing, shifts over time, and neighborhood-level disparities. </p>
         </div>
         """, unsafe_allow_html=True)
 

@@ -381,6 +381,11 @@ def analyze_white_percentage_price_relationship(year, race_df, sales_df):
 
 def show_race_demographics_analysis():
     st.header("Race Demographics Analysis")
+    st.markdown("""
+    <p style="font-size: 20px;">
+    In our racial composition analysis, we focused on White, Black, and Asian demographic categories while respectfully grouping less statistically represented populations into an "Others" category to ensure analytical validity while acknowledging the diversity within Manhattan's residential communities. On this page, you can view the racial composition of selected neighborhoods in a specific year as a bar chart as well as examine the correlation between the percentage of white population and the median sales prices in the neighborhood. 
+    </p>
+     """, unsafe_allow_html=True)
     
     with st.spinner("Loading demographic data..."):
         race_df = load_race_demographics_data(min_year=2015)
@@ -472,6 +477,11 @@ def show_race_demographics_analysis():
         
         with analysis_tabs[1]:
             st.subheader("Compare Racial Composition by Neighborhood")
+            st.markdown("""
+            <p style="font-size: 20px;">
+            In 2018, neighborhoods such as the Upper East Side, Battery Park City/Greenwich Village/SoHo, and the Upper West Side had a predominantly White population, and neighborhoods like Central Harlem, East Harlem, Hamilton Heights, and Washington Heights had significantly higher proportions of Black residents.
+            </p>
+            """, unsafe_allow_html=True)
             
             # Year selection
             available_years = sorted(race_df['Year'].unique())

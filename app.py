@@ -11,7 +11,7 @@ st.set_page_config(
     menu_items=None
 )
 
-from modules import _Home, _Pricechanges, _Health, _PriceMap, _DataOverview, _Sentiment, _Introduction
+from modules import _Home, _Pricechanges, _Health, _PriceMap, _DataOverview, _Introduction
 from modules._Demographics.main import show as _Demographics_show
 
 def create_sidebar():

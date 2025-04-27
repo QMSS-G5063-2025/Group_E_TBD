@@ -406,8 +406,14 @@ def analyze_facility_price_relationship(facilities_df, property_df):
     else:
         st.markdown("There appears to be a **weak or moderate relationship** between the number of health facilities and property prices in Manhattan neighborhoods.")
     
+    st.markdown("""
+    <p style="font-size: 20px;">
+    The Upper East Side, Harlem, and Washington Heights had the highest number of health facilities in 2023. Based on the treemap, we found a weak to moderate negative relationship between the number of facilities and median property prices, suggesting that neighborhoods with more health facilities tended to have slightly lower median property prices, although the relationship is not very strong. There are many potential explanations for this correlation. For example, neighborhoods with a lot of institutional buildings often have less space available for high-end residential development, which can limit property prices because there is not a lot of space reserved for building luxury real estate for sale. Another explanation could be that public health infrastructure tends to be placed based on population density and need (e.g., rates of chronic illness, older populations), rather than wealth. Neighborhoods with larger vulnerable populations may have more facilities, while as analyzed earlier, there was a small negative correlation between average age and real estate prices.
+    </p>
+     """, unsafe_allow_html=True)
+
     st.subheader("Detailed Neighborhood Comparison")
-    
+
     display_df = merged_df.copy()
     display_df['MEDIAN_PRICE'] = display_df['MEDIAN_PRICE'].apply(lambda x: f"${x:,.2f}")
     display_df['MEAN_PRICE'] = display_df['MEAN_PRICE'].apply(lambda x: f"${x:,.2f}")
@@ -428,6 +434,12 @@ def show():
     """Display Manhattan health facilities map and analysis"""
     st.title("Manhattan Health Facilities Interactive Map (2023)")
     
+    st.markdown("""
+    <p style="font-size: 20px;">
+    On this page, we present the relationship between healthcare infrastructure and property values across Manhattan neighborhoods. Using data from the Health Facilities Information System (HFIS), we analyze the spatial distribution of hospitals and hospital extension clinics. The interactive visualization includes a color-coded choropleth map showing facility density by neighborhood, accompanied by a histogram illustrating the distribution pattern. For detailed reference, a comprehensive table provides precise facility counts for each neighborhood. 
+    </p>
+    """, unsafe_allow_html=True)
+
     with st.spinner("Loading health facility data..."):
         facilities_df = load_health_facilities()
     
