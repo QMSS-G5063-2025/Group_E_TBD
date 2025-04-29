@@ -41,4 +41,5 @@ def show():
 
     with col2:
         # Image display
-        st.image("img/New-York2.jpg", use_container_width=True)
+        st.image("img/New-York2.jpg")
+        st.image("img/New-York3.png")

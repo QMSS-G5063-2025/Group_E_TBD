@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(__file__))
 
 # Important: st.set_page_config must be the first Streamlit command
 st.set_page_config(
-    page_title="Manhattan Rolling Sale Analysis",
+    page_title="Manhattan Real Estate Sales Analysis",
     layout="wide",
     menu_items=None
 )
