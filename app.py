@@ -1,6 +1,8 @@
 import streamlit as st
 import sys
 import os
+import plotly.express as px
+subprocess.check_call([sys.executable, "-m", "pip", "install", "plotly"])
 
 sys.path.append(os.path.dirname(__file__))
 
