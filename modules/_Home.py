@@ -51,7 +51,7 @@ def show():
     <div class="custom-layout">
         <div class="image-div"></div>
         <div class="text-div">
-            <h1 style="font-size: 4rem; font-weight: bold;">Manhattan Rolling Sale Analysis</h1>
+            <h1 style="font-size: 4rem; font-weight: bold;">Manhattan Real Estate Sales Analysis</h1>
             <h2 style="font-size: 2.5rem; margin-top: 2rem;">Group_E Presentation</h2>
         </div>
     </div>
