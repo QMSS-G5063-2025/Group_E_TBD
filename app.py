@@ -2,11 +2,7 @@ import streamlit as st
 import sys
 import os
 import plotly.express as px
-<<<<<<< HEAD
 
-=======
-subprocess.check_call([sys.executable, "-m", "pip", "install", "plotly"])
->>>>>>> 327aa28 (Final Modifictaion)
 sys.path.append(os.path.dirname(__file__))
 
 # Important: st.set_page_config must be the first Streamlit command
