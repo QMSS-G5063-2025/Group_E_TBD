@@ -14,7 +14,6 @@ def load_median_age_data(min_year=2015):
     
     all_data = []
     
-    # Process each file
     for file_path in excel_files:
         filename = os.path.basename(file_path)
         if 'Combined_' in filename and '.xlsx' in filename:
@@ -24,7 +23,6 @@ def load_median_age_data(min_year=2015):
         else:
             continue
         
-        # Read Excel file
         df = pd.read_excel(file_path)
         
         median_age_rows = df[df.iloc[:, 0].str.contains("Median age", na=False, case=False)]
@@ -42,7 +40,6 @@ def load_median_age_data(min_year=2015):
                 if "NYC-Manhattan Community District" in col_name and "PUMA" in col_name:
                     neighborhood = col_name.split("--")[1].split(" PUMA")[0]
                 
-                # Further clean neighborhood name if it contains "Estimate"
                 if "Estimate" in neighborhood:
                     neighborhood = neighborhood.split("Estimate")[0].strip()
                 
@@ -239,10 +236,8 @@ def analyze_age_price_relationship(year, age_df, sales_df):
     x = merged_df['Median_Age']
     y = merged_df['median_price']
     
-    # Regression,R,P
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
     
-    # Range and line
     x_range = np.linspace(min(x), max(x), 100)
     y_range = slope * x_range + intercept
     
@@ -415,7 +410,7 @@ def show_median_age_analysis():
             with st.spinner(f"Loading {selected_year} sales data..."):
                 sales_df = load_sales_data(selected_year)
 
-            # Analyze relationship between age and price
+            # Relationship between age and price
             analyze_age_price_relationship(selected_year, age_df_recent, sales_df)
 
 if __name__ == "__main__":

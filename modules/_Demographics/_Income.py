@@ -13,7 +13,6 @@ def load_median_income_data(min_year=2015):
     
     all_data = []
     
-    # Process each file
     for file_path in excel_files:
         filename = os.path.basename(file_path)
         if 'Combined_' in filename and '.xlsx' in filename:
@@ -23,7 +22,6 @@ def load_median_income_data(min_year=2015):
         else:
             continue
         
-        # Read Excel file
         df = pd.read_excel(file_path)
         
         median_income_rows = df[df.iloc[:, 0].str.contains("Median household income", na=False, case=False)]
@@ -240,11 +238,8 @@ def analyze_income_price_relationship(year, income_df, sales_df):
     x = merged_df['Median_Income']
     y = merged_df['median_price']
 
-    try:
-        slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
-    except Exception as e:
-        st.error(f"Error in statistical analysis: {e}")
-        return
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+
     
     x_range = np.linspace(min(x), max(x), 100)
     y_range = slope * x_range + intercept
@@ -347,7 +342,7 @@ def show_income_analysis():
             In contrast, neighborhoods such as Central Harlem, East Harlem, Hamilton Heights, Chinatown, and Washington Heights showed much lower median incomes, often hovering around $50,000 to $70,000 over the same period. It is noteworthy that we have previously identified the real estate price growth between 2018 and 2023, and there is only a gradual upward movement in their income levels. This might be because of the difference between district boundary definitions used in the real estate and demographics data so that they did not directly correspond to each other. It could also be because rising incomes, even if still modest compared to the citywide average, may have supported greater demand for housing since areas like SoHo, Tribeca, and Midtown remained out of reach for many buyers, making areas like Washington Heights and Hamilton Heights attractive alternatives.
             </p>
             """, unsafe_allow_html=True)
-            
+
             if fig:
                 st.plotly_chart(fig, use_container_width=True)
             

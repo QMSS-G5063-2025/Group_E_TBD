@@ -19,10 +19,7 @@ def load_data_by_year(year):
             df['sale_price'] = pd.to_numeric(df['sale_price'], errors='coerce')
             df = df[df['sale_price'] > 0]
             
-            # Map neighborhoods and coordinates if they don't exist in the dataset
             if 'neighborhood' not in df.columns or 'latitude' not in df.columns or 'longitude' not in df.columns:
-                # Define ZIP code to neighborhood mapping
-                # This is a copy of the mapping from your data_loader.py
                 zip_to_info = {
                     10001: ("Chelsea", 40.7503, -73.9967),
                     10002: ("Lower East Side", 40.7153, -73.9865),
@@ -71,20 +68,14 @@ def load_data_by_year(year):
                     10282: ("Battery Park City", 40.7168, -74.0130),
                 }
                 
-                # Create neighborhood and coordinates columns
                 df['neighborhood'] = df['ZIP CODE'].map(lambda x: zip_to_info.get(x, ("Unknown", np.nan, np.nan))[0])
                 df['latitude'] = df['ZIP CODE'].map(lambda x: zip_to_info.get(x, ("Unknown", np.nan, np.nan))[1])
                 df['longitude'] = df['ZIP CODE'].map(lambda x: zip_to_info.get(x, ("Unknown", np.nan, np.nan))[2])
                 
-                # Remove rows with missing data
                 df = df.dropna(subset=['latitude', 'longitude', 'neighborhood'])
             
             return df
-        else:
-            st.error(f"Dataset file not found: {data_path}")
-            return load_data()  # Fall back to default data
     else:
-        # Default to current data (use the existing load_data function)
         return load_data()
 
 def show():
@@ -118,93 +109,75 @@ def show():
     neighborhood_stats.columns = ['neighborhood', 'median_price', 'mean_price', 'sales_count', 'latitude', 'longitude']
     
     # Try to process MODZCTA data to get neighborhood regions
-    try:
-        modzcta_df = pd.read_csv('datasets/Modified_Zip_Code_Tabulation_Areas__MODZCTA__20250421.csv')
+    modzcta_df = pd.read_csv('datasets/Modified_Zip_Code_Tabulation_Areas__MODZCTA__20250421.csv')
         
         # Check if the dataset has geometry information
-        if 'the_geom' in modzcta_df.columns:
-            # Convert WKT geometry strings to GeoDataFrame
-            geometries = modzcta_df['the_geom'].apply(shapely.wkt.loads)
-            modzcta_gdf = gpd.GeoDataFrame(modzcta_df, geometry=geometries, crs="EPSG:4326")
+    if 'the_geom' in modzcta_df.columns:
+        geometries = modzcta_df['the_geom'].apply(shapely.wkt.loads)
+        modzcta_gdf = gpd.GeoDataFrame(modzcta_df, geometry=geometries, crs="EPSG:4326")
+        modzcta_gdf['zipcode'] = modzcta_gdf['MODZCTA'].astype(int)
+        manhattan_zips = [zipcode for zipcode in modzcta_gdf['zipcode']
+                            if 10001 <= zipcode <= 10282]
+        manhattan_gdf = modzcta_gdf[modzcta_gdf['zipcode'].isin(manhattan_zips)]
+        zip_to_neighborhood = {}
+        for index, row in df_filtered.drop_duplicates(['ZIP CODE', 'neighborhood']).iterrows():
+            zip_to_neighborhood[row['ZIP CODE']] = row['neighborhood']
             
-            # Convert MODZCTA to match zipcode in our data
-            modzcta_gdf['zipcode'] = modzcta_gdf['MODZCTA'].astype(int)
+        manhattan_gdf['neighborhood'] = manhattan_gdf['zipcode'].map(zip_to_neighborhood)
             
-            # Filter to just Manhattan ZIP codes (10001-10282)
-            manhattan_zips = [zipcode for zipcode in modzcta_gdf['zipcode']
-                              if 10001 <= zipcode <= 10282]
-            manhattan_gdf = modzcta_gdf[modzcta_gdf['zipcode'].isin(manhattan_zips)]
+        manhattan_gdf['neighborhood'].fillna('Other', inplace=True)
+        manhattan_gdf_dissolved = manhattan_gdf.dissolve(by='neighborhood').reset_index()
             
-            # Create a zipcode to neighborhood mapping using your load_data function results
-            # Here we use a more robust approach to handle duplicate neighborhoods
-            zip_to_neighborhood = {}
-            for index, row in df_filtered.drop_duplicates(['ZIP CODE', 'neighborhood']).iterrows():
-                zip_to_neighborhood[row['ZIP CODE']] = row['neighborhood']
+        manhattan_gdf_dissolved = manhattan_gdf_dissolved.merge(
+            neighborhood_stats,
+            on='neighborhood',
+            how='left'
+         )
             
-            manhattan_gdf['neighborhood'] = manhattan_gdf['zipcode'].map(zip_to_neighborhood)
-            
-            manhattan_gdf['neighborhood'].fillna('Other', inplace=True)
-            
-            # Key fix: Dissolve geometries by neighborhood to combine same-named neighborhoods
-            manhattan_gdf_dissolved = manhattan_gdf.dissolve(by='neighborhood').reset_index()
-            
-            # Merge with neighborhood stats
-            manhattan_gdf_dissolved = manhattan_gdf_dissolved.merge(
-                neighborhood_stats,
-                on='neighborhood',
-                how='left'
-            )
-            
-            manhattan_gdf_dissolved['median_price'].fillna(0, inplace=True)
-            manhattan_gdf_dissolved['mean_price'].fillna(0, inplace=True)
-            manhattan_gdf_dissolved['sales_count'].fillna(0, inplace=True)
+        manhattan_gdf_dissolved['median_price'].fillna(0, inplace=True)
+        manhattan_gdf_dissolved['mean_price'].fillna(0, inplace=True)
+        manhattan_gdf_dissolved['sales_count'].fillna(0, inplace=True)
         
-
             # Choropleth map
-            fig = px.choropleth_mapbox(
-                manhattan_gdf_dissolved,
-                geojson=manhattan_gdf_dissolved.geometry.__geo_interface__,
-                locations=manhattan_gdf_dissolved.index,
-                color='median_price',
-                color_continuous_scale='Blues',
-                range_color=(neighborhood_stats['median_price'].min(), neighborhood_stats['median_price'].max()),
-                hover_name='neighborhood', 
-                hover_data={
-                    'zipcode': False,
-                    'MODZCTA': False,
-                    'neighborhood': True,
-                    'median_price': True,
-                    'mean_price': True,
-                    'sales_count': True
-                },
-                zoom=11,
-                center={"lat": 40.78, "lon": -73.97},
-                opacity=0.8,
-                labels={
-                    'median_price': 'Median Price ($)',
-                    'mean_price': 'Mean Price ($)',
-                    'sales_count': 'Number of Sales'
-                },
-                title=f"Manhattan Real Estate Prices ({year_display})"
-            )
+        fig = px.choropleth_mapbox(
+            manhattan_gdf_dissolved,
+            geojson=manhattan_gdf_dissolved.geometry.__geo_interface__,
+            locations=manhattan_gdf_dissolved.index,
+            color='median_price',
+            color_continuous_scale='Blues',
+            range_color=(neighborhood_stats['median_price'].min(), neighborhood_stats['median_price'].max()),
+            hover_name='neighborhood', 
+            hover_data={
+                'zipcode': False,
+                'MODZCTA': False,
+                'neighborhood': True,
+                'median_price': True,
+                'mean_price': True,
+                'sales_count': True
+            },
+            zoom=11,
+            center={"lat": 40.78, "lon": -73.97},
+            opacity=0.8,
+            labels={
+                'median_price': 'Median Price ($)',
+                'mean_price': 'Mean Price ($)',
+                'sales_count': 'Number of Sales'
+            },
+            title=f"Manhattan Real Estate Prices ({year_display})"
+        )
             
-            # Update layout for better visibility
-            fig.update_layout(
-                mapbox_style="carto-positron",
-                margin={"r": 0, "t": 30, "l": 0, "b": 0},
-                height=700,
-            )
+        fig.update_layout(
+            mapbox_style="carto-positron",
+            margin={"r": 0, "t": 30, "l": 0, "b": 0},
+            height=700,
+        )
             
-            # Display the map
-            st.plotly_chart(fig, use_container_width=True)
+            # Display
+        st.plotly_chart(fig, use_container_width=True)
             
-        else:
-            # If no geometry column, fall back to bubble map
-            create_bubble_map(neighborhood_stats, year_display)
-            
-    except Exception as e:
-        st.error(f"Error creating map: {str(e)}")
+    else:
         create_bubble_map(neighborhood_stats, year_display)
+            
     
     show_neighborhood_rankings(neighborhood_stats, year_display)
 
@@ -259,7 +232,7 @@ def show_neighborhood_rankings(neighborhood_stats, year_display):
     # Sort by median price
     sorted_stats = neighborhood_stats.sort_values('median_price', ascending=False)
     sorted_stats = sorted_stats.reset_index(drop=True)
-    sorted_stats.index = sorted_stats.index + 1  # Rank starting from 1
+    sorted_stats.index = sorted_stats.index + 1
     
     display_columns = ['neighborhood', 'median_price', 'mean_price', 'sales_count']
     table_data = sorted_stats[display_columns].copy()

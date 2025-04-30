@@ -7,7 +7,6 @@ from utils.data_loader import load_data
 def show():
     st.title("Manhattan Real Estate Sales Data Overview (2023)")
 
-    # Custom data loading function to use the specified file path
     @st.cache_data
     def load_sales_data():
         file_path = "datasets/2023_manhattan.xlsx"
@@ -16,7 +15,6 @@ def show():
         df['sale_price'] = pd.to_numeric(df['sale_price'], errors='coerce')
         df = df[df['sale_price'] > 10000] 
         
-        # Define the consolidated neighborhoods - using the same mapping as in PriceMap
         neighborhood_mapping = {
             'UPPER EAST SIDE (59-79)': 'Upper East Side',
             'UPPER EAST SIDE (79-96)': 'Upper East Side',

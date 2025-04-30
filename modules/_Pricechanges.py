@@ -9,15 +9,14 @@ from utils.data_loader import load_data
 def show():
     st.title("Manhattan Property Price Changes (2015-2023)")
     
-    # Load data from each year
+
     @st.cache_data
     def load_yearly_data():
-        years = list(range(2015, 2024))  # 2015 to 2023
+        years = list(range(2015, 2024)) 
         yearly_data = {}
         neighborhood_mapping = get_neighborhood_mapping()
         
         for year in years:
-            # Check for both .xls and .xlsx files
             file_path = None
             for ext in ['.xlsx', '.xls']:
                 temp_path = f"datasets/{year}_manhattan{ext}"
@@ -29,39 +28,30 @@ def show():
                 continue
                 
             try:
-                # Load the data
                 df = pd.read_excel(file_path)
                 
-                # Basic data cleaning for sale price
                 if 'sale_price' in df.columns:
                     df['sale_price'] = pd.to_numeric(df['sale_price'], errors='coerce')
                 else:
-                    # Try to find a column that might contain price data
                     price_candidates = [col for col in df.columns if 'price' in str(col).lower() or 'sale' in str(col).lower()]
                     if price_candidates:
                         df['sale_price'] = pd.to_numeric(df[price_candidates[0]], errors='coerce')
                     else:
                         continue
                 
-                # Filter out very low values
                 df = df[df['sale_price'] > 10000]
                 
-                # Handle the consolidated neighborhoods
-                # First try to use either neighborhood column 
                 if 'neighborhood' in df.columns:
                     df['consolidated_neighborhood'] = df['neighborhood'].map(
                         lambda x: next((v for k, v in neighborhood_mapping.items() 
                                       if k in str(x).upper()), None)
                     )
                 else:
-                    # Try to use zip code - check exact column names in the dataframe
                     zip_col = None
                     
-                    # Method 1: Check if 'ZIP CODE' exists with exact case
                     if 'ZIP CODE' in df.columns:
                         zip_col = 'ZIP CODE'
                     
-                    # Method 2: Check common variations
                     if not zip_col:
                         zip_variations = ['ZIP', 'ZIPCODE', 'Zip Code', 'zip_code', 'zip', 'Zip']
                         for col in zip_variations:
@@ -69,22 +59,17 @@ def show():
                                 zip_col = col
                                 break
                     
-                    # Method 3: Case insensitive search
                     if not zip_col:
                         for col in df.columns:
                             if 'zip' in str(col).lower():
                                 zip_col = col
                                 break
                     
-                    # If we found a zip column, use it
+
                     if zip_col:
-                        # Create mapping function that handles NaN values and different types
                         zip_to_neighborhood = get_zip_to_neighborhood_mapping()
-                        
-                        # Use a safe mapping approach
                         def safe_map(code):
                             try:
-                                # Try to convert to integer (handles strings, floats, etc.)
                                 int_code = int(float(code))
                                 return zip_to_neighborhood.get(int_code, None)
                             except (ValueError, TypeError):
@@ -93,21 +78,16 @@ def show():
                         # Apply the mapping
                         df['consolidated_neighborhood'] = df[zip_col].apply(safe_map)
                 
-                # Remove rows with None in consolidated_neighborhood
                 df = df.dropna(subset=['consolidated_neighborhood'])
                 
-                # Group by neighborhood and calculate statistics
                 neighborhood_stats = df.groupby('consolidated_neighborhood').agg({
                     'sale_price': ['median', 'mean', 'count']
                 }).reset_index()
                 
-                # Flatten the column hierarchy
                 neighborhood_stats.columns = ['neighborhood', 'median_price', 'mean_price', 'count']
                 
-                # Add year column
                 neighborhood_stats['year'] = year
                 
-                # Add to yearly data
                 yearly_data[year] = neighborhood_stats
                 
             except Exception as e:
@@ -231,9 +211,6 @@ def show():
     with st.spinner("Loading data for all years (2015-2023)..."):
         yearly_data = load_yearly_data()
     
-    if not yearly_data:
-        st.error("No data found for any year. Please check the data files.")
-        return
     
     st.markdown("""
     <p style="font-size: 20px;">
@@ -283,7 +260,7 @@ def show():
         if filtered_data.empty:
             st.warning("No data available for the selected filters.")
         else:
-            # Create line chart of price trends
+            # Create line chart
             fig = px.line(
                 filtered_data,
                 x="year",
@@ -296,10 +273,9 @@ def show():
                     price_metric: f"{'Median' if price_metric == 'median_price' else 'Mean'} Price ($)",
                     "neighborhood": "Neighborhood"
                 },
-                template="plotly_white"  # Using a white template for cleaner look
+                template="plotly_white" 
             )
             
-            # Format y-axis as currency
             fig.update_layout(
                 yaxis=dict(
                     tickprefix="$",
@@ -337,58 +313,46 @@ def show():
             # Calculate and display growth rates
             st.subheader("Price Growth Analysis")
             
-            try:
-                # Pivot data for calculations
-                pivot_data = filtered_data.pivot_table(
-                    index='year', 
-                    columns='neighborhood', 
-                    values=price_metric
-                ).reset_index()
+            pivot_data = filtered_data.pivot_table(
+                index='year', 
+                columns='neighborhood', 
+                values=price_metric
+            ).reset_index()
                 
-                # Calculate year-over-year changes
-                oldest_year = min(yearly_data.keys())
-                latest_year = max(yearly_data.keys())
+            oldest_year = min(yearly_data.keys())
+            latest_year = max(yearly_data.keys())
                 
-                # Overall growth rate
-                if oldest_year in yearly_data and latest_year in yearly_data:
-                    growth_data = []
+            if oldest_year in yearly_data and latest_year in yearly_data:
+                growth_data = []
                     
-                    for neighborhood in selected_neighborhoods:
-                        try:
-                            # Get prices for first and last year
-                            start_year = min(pivot_data['year'])
-                            end_year = max(pivot_data['year'])
-                            start_price = pivot_data[pivot_data['year'] == start_year][neighborhood].values[0]
-                            end_price = pivot_data[pivot_data['year'] == end_year][neighborhood].values[0]
+                for neighborhood in selected_neighborhoods:
+                    start_year = min(pivot_data['year'])
+                    end_year = max(pivot_data['year'])
+                    start_price = pivot_data[pivot_data['year'] == start_year][neighborhood].values[0]
+                    end_price = pivot_data[pivot_data['year'] == end_year][neighborhood].values[0]
                             
-                            # Calculate growth
-                            total_growth = (end_price / start_price - 1) * 100
-                            annual_growth = ((end_price / start_price) ** (1 / (end_year - start_year)) - 1) * 100
+                    total_growth = (end_price / start_price - 1) * 100
+                    annual_growth = ((end_price / start_price) ** (1 / (end_year - start_year)) - 1) * 100
                             
-                            growth_data.append({
-                                'Neighborhood': neighborhood,
-                                'Start Price': start_price,
-                                'End Price': end_price,
-                                'Total Growth (%)': total_growth,
-                                'Annual Growth (%)': annual_growth
-                            })
-                        except:
-                            # Skip if data is missing
-                            continue
+                    growth_data.append({
+                        'Neighborhood': neighborhood,
+                        'Start Price': start_price,
+                        'End Price': end_price,
+                        'Total Growth (%)': total_growth,
+                        'Annual Growth (%)': annual_growth
+                    })
                     
-                    if growth_data:
-                        growth_df = pd.DataFrame(growth_data)
-                        growth_df = growth_df.sort_values('Total Growth (%)', ascending=False)
+                if growth_data:
+                    growth_df = pd.DataFrame(growth_data)
+                    growth_df = growth_df.sort_values('Total Growth (%)', ascending=False)
                         
-                        # Format price columns
-                        growth_df['Start Price'] = growth_df['Start Price'].apply(lambda x: f"${x:,.2f}")
-                        growth_df['End Price'] = growth_df['End Price'].apply(lambda x: f"${x:,.2f}")
-                        growth_df['Total Growth (%)'] = growth_df['Total Growth (%)'].apply(lambda x: f"{x:.1f}%")
-                        growth_df['Annual Growth (%)'] = growth_df['Annual Growth (%)'].apply(lambda x: f"{x:.1f}%")
+                    growth_df['Start Price'] = growth_df['Start Price'].apply(lambda x: f"${x:,.2f}")
+                    growth_df['End Price'] = growth_df['End Price'].apply(lambda x: f"${x:,.2f}")
+                    growth_df['Total Growth (%)'] = growth_df['Total Growth (%)'].apply(lambda x: f"{x:.1f}%")
+                    growth_df['Annual Growth (%)'] = growth_df['Annual Growth (%)'].apply(lambda x: f"{x:.1f}%")
                         
-                        st.dataframe(growth_df, use_container_width=True)
-            except Exception as e:
-                st.error(f"Error calculating growth rates: {str(e)}")
+                    st.dataframe(growth_df, use_container_width=True)
+
     
     with tab2:
         st.subheader("Year-by-Year Comparison")
@@ -405,7 +369,6 @@ def show():
                 year2 = st.selectbox("Select Second Year", options=years_available, index=len(years_available)-1)
             
             if year1 in yearly_data and year2 in yearly_data:
-                # Get data for selected years
                 data_year1 = yearly_data[year1]
                 data_year2 = yearly_data[year2]
                 
@@ -414,7 +377,6 @@ def show():
                     data_year1 = data_year1[data_year1['neighborhood'].isin(selected_neighborhoods)]
                     data_year2 = data_year2[data_year2['neighborhood'].isin(selected_neighborhoods)]
                 
-                # Merge data from both years
                 comparison_data = pd.merge(
                     data_year1[['neighborhood', price_metric]],
                     data_year2[['neighborhood', price_metric]],
@@ -422,22 +384,20 @@ def show():
                     suffixes=(f'_{year1}', f'_{year2}')
                 )
                 
-                # Calculate change
+                # Change
                 comparison_data[f'change_{year1}_to_{year2}'] = (
                     comparison_data[f'{price_metric}_{year2}'] / 
                     comparison_data[f'{price_metric}_{year1}'] - 1
                 ) * 100
                 
-                # Sort by price change
                 comparison_data = comparison_data.sort_values(f'change_{year1}_to_{year2}', ascending=False)
                 
-                # Create bar chart showing change
                 fig = px.bar(
                     comparison_data,
                     x='neighborhood',
                     y=f'change_{year1}_to_{year2}',
                     color=f'change_{year1}_to_{year2}',
-                    color_continuous_scale='RdBu_r',  # Red for negative, Blue for positive
+                    color_continuous_scale='RdBu_r', 
                     title=f"Price Change from {year1} to {year2} by Neighborhood",
                     labels={
                         'neighborhood': 'Neighborhood',
@@ -452,7 +412,6 @@ def show():
                     height=500
                 )
                 
-                # Add a reference line at 0%
                 fig.add_shape(
                     type="line",
                     x0=-0.5,
@@ -474,17 +433,13 @@ def show():
                 </p>
                 """, unsafe_allow_html=True)
 
-                # Display comparison table
                 st.subheader(f"Price Comparison Table ({year1} vs {year2})")
                 
-                # Format table for display
                 display_data = comparison_data.copy()
                 display_data[f'{price_metric}_{year1}'] = display_data[f'{price_metric}_{year1}'].apply(lambda x: f"${x:,.2f}" if pd.notnull(x) else "N/A")
                 display_data[f'{price_metric}_{year2}'] = display_data[f'{price_metric}_{year2}'].apply(lambda x: f"${x:,.2f}" if pd.notnull(x) else "N/A")
                 display_data[f'change_{year1}_to_{year2}'] = display_data[f'change_{year1}_to_{year2}'].apply(lambda x: f"{x:.1f}%" if pd.notnull(x) else "N/A")
                 
-
-                # Rename columns for display
                 display_data.columns = [
                     'Neighborhood', 
                     f'{"Median" if price_metric == "median_price" else "Mean"} Price ({year1})', 
@@ -494,8 +449,6 @@ def show():
                 
                 st.dataframe(display_data, use_container_width=True)
     
-    # Data Table
-    # Removed as requested
 
 if __name__ == "__main__":
     show()

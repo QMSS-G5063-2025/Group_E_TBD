@@ -13,14 +13,12 @@ def load_race_demographics_data(min_year=2015):
     
     all_data = []
     
-    # Race categories to extract
     race_categories = [
         "White",
         "Black or African American",
         "Asian"
     ]
     
-    # Process each file
     for file_path in excel_files:
         filename = os.path.basename(file_path)
         if 'Combined_' in filename and '.xlsx' in filename:
@@ -157,7 +155,6 @@ def create_race_stacked_area_plot(df, selected_neighborhood):
     # Filter data for selected neighborhood
     neighborhood_df = df[df['Neighborhood'] == selected_neighborhood].copy()
     
-    # Pivot data to create a dataframe with years as index, races as columns, and percentages as values
     pivot_df = neighborhood_df.pivot_table(
         values='Percentage', 
         index='Year', 
@@ -333,11 +330,8 @@ def analyze_white_percentage_price_relationship(year, race_df, sales_df):
     x = merged_df['Percentage']
     y = merged_df['median_price']
 
-    try:
-        slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
-    except Exception as e:
-        st.error(f"Error in statistical analysis: {e}")
-        return
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+
     
     # Create regression line
     x_range = np.linspace(min(x), max(x), 100)
@@ -542,7 +536,7 @@ def show_race_demographics_analysis():
             with st.spinner(f"Loading {selected_year} sales data..."):
                 sales_df = load_sales_data(selected_year)
             
-            # Analyze relationship between white percentage and property prices
+            # Relationship between white percentage and property prices
             if sales_df is not None:
                 analyze_white_percentage_price_relationship(selected_year, race_df_recent, sales_df)
             else:

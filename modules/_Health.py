@@ -328,37 +328,30 @@ def create_facility_map(facilities_df, geo_data=None):
         # Show data table
         try:
             display_columns = ['FACILITY_NAME', 'NEIGHBORHOOD', 'ZIP_CODE', 'Short Description']
-            # Display the table
             st.dataframe(filtered_facilities[display_columns], use_container_width=True)
         except:
-            # Fallback if 'Short Description' column is not available
             display_columns = ['FACILITY_NAME', 'NEIGHBORHOOD', 'ZIP_CODE']
             st.dataframe(filtered_facilities[display_columns], use_container_width=True)
 
 @st.cache_data
 def load_property_data():
-    """Load real estate sales data for 2023"""
-    try:
-        file_path = "datasets/2023_manhattan.xlsx"
+    file_path = "datasets/2023_manhattan.xlsx"
         
-        if not os.path.exists(file_path):
-            st.warning(f"Property price data file not found: {file_path}")
-            return pd.DataFrame()
-            
-        df = pd.read_excel(file_path)
-        
-        df['sale_price'] = pd.to_numeric(df['sale_price'], errors='coerce')
-        df = df[df['sale_price'] > 10000]  
-        
-        zip_to_neighborhood = get_manhattan_zip_map()
-        df['NEIGHBORHOOD'] = df['ZIP CODE'].map(zip_to_neighborhood)
-        
-        df = df.dropna(subset=['NEIGHBORHOOD'])
-        
-        return df
-    except Exception as e:
-        st.error(f"Error loading property data: {str(e)}")
+    if not os.path.exists(file_path):
+        st.warning(f"Property price data file not found: {file_path}")
         return pd.DataFrame()
+            
+    df = pd.read_excel(file_path)
+        
+    df['sale_price'] = pd.to_numeric(df['sale_price'], errors='coerce')
+    df = df[df['sale_price'] > 10000]  
+        
+    zip_to_neighborhood = get_manhattan_zip_map()
+    df['NEIGHBORHOOD'] = df['ZIP CODE'].map(zip_to_neighborhood)
+        
+    df = df.dropna(subset=['NEIGHBORHOOD'])
+        
+    return df
 
 def analyze_facility_price_relationship(facilities_df, property_df):
     

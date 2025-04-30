@@ -13,17 +13,13 @@ def show():
     </p>
     """, unsafe_allow_html=True)
     
-    # Create tabs within the Demographics page
     tabs = st.tabs(["Age", "Income", "Race"])
     
-    # Median Age tab
     with tabs[0]:
         show_median_age_analysis()
     
-    # Income tab
     with tabs[1]:
         show_income_analysis()
     
-    # Race tab
     with tabs[2]:
         show_race_analysis()
