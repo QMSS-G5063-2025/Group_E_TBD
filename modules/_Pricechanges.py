@@ -262,7 +262,7 @@ def show():
     tab1, tab2 = st.tabs(["Price Trends", "Yearly Comparison"])
     
     with tab1:
-        st.subheader("Manhattan Neighborhood Price Trends (2015-2023)")
+        st.subheader("Manhattan Neighborhood Price Trends (2018-2023)")
         
         if filtered_data.empty:
             st.warning("No data available for the selected filters.")
@@ -274,7 +274,7 @@ def show():
                 y=price_metric,
                 color="neighborhood",
                 markers=True,
-                title=f"{'Median' if price_metric == 'median_price' else 'Mean'} Price by Neighborhood (2015-2023)",
+                title=f"{'Median' if price_metric == 'median_price' else 'Mean'} Price by Neighborhood (2018-2023)",
                 labels={
                     "year": "Year",
                     price_metric: f"{'Median' if price_metric == 'median_price' else 'Mean'} Price ($)",
