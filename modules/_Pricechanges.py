@@ -12,11 +12,20 @@ def show():
 
     @st.cache_data
     def load_yearly_data():
-        years = list(range(2018, 2024)) 
+        years = list(range(2015, 2024)) 
         yearly_data = {}
         neighborhood_mapping = get_neighborhood_mapping()
         
         for year in years:
+            file_path = None
+            if year <= 2017:
+                temp_path = f"datasets/{year}_manhattan.xls"
+                if os.path.exists(temp_path):
+                    file_path = temp_path
+            else:
+                temp_path = f"datasets/{year}_manhattan.xlsx"
+                if os.path.exists(temp_path):
+                    file_path = temp_path
             temp_path = f"datasets/{year}_manhattan.xlsx"
             if os.path.exists(temp_path):
                 file_path = temp_path
