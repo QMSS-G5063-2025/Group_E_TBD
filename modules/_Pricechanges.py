@@ -26,9 +26,6 @@ def show():
                 temp_path = f"datasets/{year}_manhattan.xlsx"
                 if os.path.exists(temp_path):
                     file_path = temp_path
-            temp_path = f"datasets/{year}_manhattan.xlsx"
-            if os.path.exists(temp_path):
-                file_path = temp_path
             
             if not file_path:
                 for ext in ['.xlsx', '.xls']:
