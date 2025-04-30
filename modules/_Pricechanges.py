@@ -18,14 +18,21 @@ def show():
         
         for year in years:
             file_path = None
-            for ext in ['.xlsx', '.xls']:
-                temp_path = f"datasets/{year}_manhattan{ext}"
+            if year <= 2017:
+                temp_path = f"datasets/{year}_manhattan.xls"
                 if os.path.exists(temp_path):
                     file_path = temp_path
-                    break
+            else:
+                temp_path = f"datasets/{year}_manhattan.xlsx"
+                if os.path.exists(temp_path):
+                    file_path = temp_path
             
             if not file_path:
-                continue
+                for ext in ['.xlsx', '.xls']:
+                    temp_path = f"datasets/{year}_manhattan{ext}"
+                    if os.path.exists(temp_path):
+                        file_path = temp_path
+                        break
                 
             try:
                 df = pd.read_excel(file_path)
