@@ -7,7 +7,7 @@ import os
 from utils.data_loader import load_data
 
 def show():
-    st.title("Manhattan Property Price Changes (2018-2023)")
+    st.title("Manhattan Property Price Changes (2015-2023)")
     
 
     @st.cache_data
@@ -221,7 +221,7 @@ def show():
     
     st.markdown("""
     <p style="font-size: 20px;">
-    To explore how real estate prices have evolved from 2018 to 2023, you can select specific neighborhoods to view their median and mean sale prices over time, with each neighborhood represented by a distinct color on the line chart for clear, straightforward comparison. Another feature on the page is the bar charts that allow for comparison of price changes between the selected neighborhoods in a particular year. 
+    To explore how real estate prices have evolved from 2015 to 2023, you can select specific neighborhoods to view their median and mean sale prices over time, with each neighborhood represented by a distinct color on the line chart for clear, straightforward comparison. Another feature on the page is the bar charts that allow for comparison of price changes between the selected neighborhoods in a particular year. 
     </p>
      """, unsafe_allow_html=True)
     
@@ -262,7 +262,7 @@ def show():
     tab1, tab2 = st.tabs(["Price Trends", "Yearly Comparison"])
     
     with tab1:
-        st.subheader("Manhattan Neighborhood Price Trends (2018-2023)")
+        st.subheader("Manhattan Neighborhood Price Trends (2015-2023)")
         
         if filtered_data.empty:
             st.warning("No data available for the selected filters.")
@@ -274,7 +274,7 @@ def show():
                 y=price_metric,
                 color="neighborhood",
                 markers=True,
-                title=f"{'Median' if price_metric == 'median_price' else 'Mean'} Price by Neighborhood (2018-2023)",
+                title=f"{'Median' if price_metric == 'median_price' else 'Mean'} Price by Neighborhood (2015-2023)",
                 labels={
                     "year": "Year",
                     price_metric: f"{'Median' if price_metric == 'median_price' else 'Mean'} Price ($)",
@@ -310,7 +310,7 @@ def show():
             
             st.markdown("""
             <p style="font-size: 20px;">
-            From the median price trends, we found that most neighborhoods remained relatively stable between 2018 and 2023, with Battery Park City consistently having higher median prices compared to others. However, the gap between the prices gradually declined over the years. 
+            From the median price trends, we found that most neighborhoods remained relatively stable between 2015 and 2023, with Battery Park City consistently having higher median prices compared to others. However, the gap between the prices gradually declined over the years. 
             </p>
             <p style="font-size: 20px;">
             The mean price trends display much sharper fluctuations across neighborhoods, particularly in the Financial District, Midtown, and Greenwich Village, with dramatic spikes and dips that did not appear in the median price chart. There had likely been a few exceptionally high-value sales in these areas during those years.
@@ -436,7 +436,7 @@ def show():
                 
                 st.markdown("""
                 <p style="font-size: 20px;">
-                When directly comparing the prices in 2018 and 2023 we can see that as the price map has previously indicated, Washington Heights experienced the most dramatic increase in real estate prices with a more than 100% increase in mean prices and 80% in median prices. This suggests that the higher value in property was not a mere result of multiple outlier deals but a broader growth, whereas the significant growth perceived in Harlem might be because of a few high-value sales. While SoHo/Tribeca went through the biggest drop in median prices, Chelsea had the biggest decrease for mean prices. There was an indication of a general declining trend in the traditionally more expensive neighborhood.
+                When directly comparing the prices in 2015 and 2023 we can see that as the price map has previously indicated, Washington Heights experienced the most dramatic increase in real estate prices with a more than 100% increase in mean prices and 80% in median prices. This suggests that the higher value in property was not a mere result of multiple outlier deals but a broader growth, whereas the significant growth perceived in Harlem might be because of a few high-value sales. While SoHo/Tribeca went through the biggest drop in median prices, Chelsea had the biggest decrease for mean prices. There was an indication of a general declining trend in the traditionally more expensive neighborhood.
                 </p>
                 """, unsafe_allow_html=True)
 
